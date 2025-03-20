@@ -55,6 +55,8 @@ In this application exercise we tell different stories with the same data.
 
 Add `scales = "free_x"` as an argument to the `facet_wrap()` function. How does the visualisation change? How is the story this visualisation telling different than the story the original plot tells?
 
+Tambahkan `scales = "free_x"` sebagai argumen dalam fungsi `facet_wrap()`. Bagaimana visualisasi berubah? Bagaimana cerita yang disampaikan oleh visualisasi ini berbeda dari cerita yang disampaikan oleh plot aslinya?
+
 ```{r}
 brexit <- brexit %>%
   mutate(
@@ -83,9 +85,15 @@ ggplot(brexit, aes(y = opinion, fill = opinion)) +
   theme_minimal()
 ```
 
+Interpretasi : 
+Berdasarkan hal tersebut tedapat perbedaan yaitu dengan penambahan scales = "free_x", setiap facet memiliki skala X yang berbeda sesuai dengan datanya, sehingga variasi dalam masing-masing kategori lebih jelas. Penambahan ini membuat setiap wilayah memiliki skala X sendiri, sehingga ukuran grafik lebih proporsional dengan jumlah responden pada wilayah tersebut.Sedagkan tanpa scales = "free_x", semua facet memiliki skala X yang sama, sehingga perbandingan antar kategori lebih langsung tetapi bisa membuat beberapa data terlihat terlalu padat atau tersebar.
+
+
 ### Exercise 2 - Comparing proportions across facets
 
 First, calculate the proportion of wrong, right, and don't know answers in each category and then plot these proportions (rather than the counts) and then improve axis labeling. How is the story this visualisation telling different than the story the original plot tells? **Hint:** You'll need the **scales** package to improve axis labeling, which means you'll need to load it on top of the document as well.
+
+Pertama, hitung proporsi jawaban salah (wrong), benar (right), dan tidak tahu (don't know) dalam setiap kategori. Kemudian, buat plot berdasarkan proporsi tersebut (bukan jumlah total). Setelah itu, perbaiki pelabelan sumbu. Bagaimana cerita yang disampaikan oleh visualisasi ini berbeda dari cerita yang disampaikan oleh plot aslinya?
 
 ```{r}
 # Menghitung proporsi opini di setiap region
@@ -112,9 +120,14 @@ ggplot(brexit_prop, aes(x = region, y = prop, fill = opinion)) +
   theme_minimal()
 ```
 
+Interpretasi :
+Berdasarkan bar chart tersebut menunjukkan bahwa opini tentang Brexit bervariasi di setiap wilayah Inggris. Scotland dan London cenderung menilai Brexit sebagai kesalahan, dengan proporsi "Wrong" yang jauh lebih tinggi dibanding "Right". Sementara untuk wilayah Rest of South, Midlands/Wales, dan North lebih seimbang, sedangkan proporsi responden yang tidak tahu (Don't know) relatif kecil di semua wilayah Inggris, hal ini menandakan bahwa masyarakat umumnya memiliki pendapat yang tegas tentang Brexit.
+
 ### Exercise 3 - Comparing proportions across bars
 
 Recreate the same visualisation from the previous exercise, this time dodging the bars for opinion proportions for each region, rather than faceting by region and then improve the legend. How is the story this visualisation telling different than the story the previous plot tells?
+
+Buat kembali visualisasi yang sama dari latihan sebelumnya, kali ini dengan menggeser (dodging) batang untuk proporsi opini di setiap wilayah, bukan dengan memisahkan (faceting) berdasarkan wilayah. Kemudian, perbaiki legenda. Bagaimana cerita yang disampaikan oleh visualisasi ini berbeda dari cerita yang disampaikan oleh grafik sebelumnya?
 
 ```{r}
 library(dplyr)
@@ -124,18 +137,23 @@ library(ggplot2)
 brexit_prop <- brexit %>%
   group_by(region, opinion) %>%
   summarise(count = n(), .groups = "drop") %>%
-  mutate(prop = count / sum(count))  # Konversi ke proporsi
+  group_by(region) %>%  
+  mutate(prop = count / sum(count))  
 
 # Visualisasi dengan posisi dodge
-ggplot(brexit_prop, aes(x = opinion, y = prop, fill = region)) +
+ggplot(brexit_prop, aes(x = region, y = prop, fill = opinion)) +
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
     title = "Comparison of Brexit Opinions Across Regions",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
-    x = "Opinion", y = "Proportion",
-    fill = "Region"  # Memperbaiki legenda agar lebih informatif
+    x = "Region", y = "Proportion",
+    fill = "Opinion"  
   ) +
   scale_fill_brewer(palette = "Set1") +
   theme_minimal()
+
 ```
+
+Interpretasi :
+Visualisasi ini menunjukkan distribusi opini tentang Brexit di berbagai wilayah dengan pendekatan "dodged bars", yang memungkinkan perbandingan langsung antara kategori opini dalam setiap wilayah. Dari grafik, terlihat bahwa opini "Wrong" (hijau) lebih besar pada wilayah Skotlandia dan London, sementara wilayah lainnya memiliki distribusi yang lebih seimbang antara "Right" (biru) dan "Wrong" (hijau). Sedangkan untuk opini "Don't know" (merah) tetap rendah di semua wilayah, hal ini menunjukan bahwa sebagian besar responden memiliki sikap yang jelas terhadap Brexit.

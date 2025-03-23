@@ -96,32 +96,60 @@ First, calculate the proportion of wrong, right, and don't know answers in each 
 Pertama, hitung proporsi jawaban salah (wrong), benar (right), dan tidak tahu (don't know) dalam setiap kategori. Kemudian, buat plot berdasarkan proporsi tersebut (bukan jumlah total). Setelah itu, perbaiki pelabelan sumbu. Bagaimana cerita yang disampaikan oleh visualisasi ini berbeda dari cerita yang disampaikan oleh plot aslinya?
 
 ```{r}
-# Menghitung proporsi opini di setiap region
-brexit_prop <- brexit %>%
-  count(region, opinion) %>%
-  group_by(region) %>%
-  mutate(prop = n / sum(n))
+library(ggplot2)
+library(dplyr)
+library(forcats)
+library(scales)
 
-# Visualisasi berdasarkan proporsi
-ggplot(brexit_prop, aes(x = region, y = prop, fill = opinion)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
+brexit <- brexit %>%
+  mutate(region = as.factor(region)) %>%
+  mutate(
+    region = fct_relevel(region, "london", "rest_of_south", "midlands_wales", "north", "scot"),
+    region = fct_recode(region, 
+                        "London" = "london", 
+                        "Rest of South" = "rest_of_south",  
+                        "Midlands / Wales" = "midlands_wales", 
+                        "North" = "north", 
+                        "Scotland" = "scot")
+  )
+
+if (!"opinion" %in% colnames(brexit)) {
+  stop("Error: The 'opinion' column is missing from the dataset.")
+}
+
+brexit_prop <- brexit %>%
+  group_by(region, opinion) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(region) %>%
+  mutate(proportion = count / sum(count))
+
+ggplot(brexit_prop, aes(x = opinion, y = proportion, fill = opinion)) +
+  geom_col() +  # Gunakan geom_col() karena data sudah berupa agregat
+  facet_wrap(~region, ncol = 2) +  # Menampilkan facet dengan 2 kolom agar lebih rapi
+  scale_y_continuous(labels = percent_format()) +  
   labs(
-    title = "Proportion of Opinions on Brexit by Region",
+    title = "Was Britain right/wrong to vote to leave EU?",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
     caption = "Source: bit.ly/2lCJZVg",
-    x = "Region", y = "Proportion"
+    x = NULL, y = "Proportion",
+    fill = "Opinion"
   ) +
   scale_fill_manual(values = c(
     "Wrong" = "#ef8a62",
     "Right" = "#67a9cf",
     "Don't know" = "gray"
   )) +
-  theme_minimal()
+  coord_flip() +  # Memutar sumbu agar lebih mudah dibaca
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold", size = 10)  # Memperjelas label facet
+  )
 ```
 
 Interpretasi :
-Berdasarkan bar chart tersebut menunjukkan bahwa opini tentang Brexit bervariasi di setiap wilayah Inggris. Scotland dan London cenderung menilai Brexit sebagai kesalahan, dengan proporsi "Wrong" yang jauh lebih tinggi dibanding "Right". Sementara untuk wilayah Rest of South, Midlands/Wales, dan North lebih seimbang, sedangkan proporsi responden yang tidak tahu (Don't know) relatif kecil di semua wilayah Inggris, hal ini menandakan bahwa masyarakat umumnya memiliki pendapat yang tegas tentang Brexit.
+Berdasarkan chart tersebut menunjukkan bahwa opini tentang Brexit bervariasi di setiap wilayah Inggris. Scotland dan London cenderung menilai Brexit sebagai kesalahan, dengan proporsi "Wrong" yang jauh lebih tinggi dibanding "Right". Sementara untuk wilayah Rest of South, Midlands/Wales, dan North lebih seimbang, sedangkan proporsi responden yang tidak tahu (Don't know) relatif kecil di semua wilayah Inggris, hal ini menandakan bahwa masyarakat umumnya memiliki pendapat yang tegas tentang Brexit.
 
 ### Exercise 3 - Comparing proportions across bars
 

@@ -139,12 +139,12 @@ ggplot(brexit_prop, aes(x = opinion, y = proportion, fill = opinion)) +
     "Right" = "#67a9cf",
     "Don't know" = "gray"
   )) +
-  coord_flip() +  # Memutar sumbu agar lebih mudah dibaca
+  coord_flip() +
   theme_minimal() +
   theme(
     legend.position = "bottom",
     legend.title = element_text(face = "bold"),
-    strip.text = element_text(face = "bold", size = 10)  # Memperjelas label facet
+    strip.text = element_text(face = "bold", size = 10)  
   )
 ```
 
@@ -161,14 +161,12 @@ Buat kembali visualisasi yang sama dari latihan sebelumnya, kali ini dengan meng
 library(dplyr)
 library(ggplot2)
 
-# Menghitung proporsi opini per wilayah
 brexit_prop <- brexit %>%
   group_by(region, opinion) %>%
   summarise(count = n(), .groups = "drop") %>%
   group_by(region) %>%  
   mutate(prop = count / sum(count))  
 
-# Visualisasi dengan posisi dodge
 ggplot(brexit_prop, aes(x = region, y = prop, fill = opinion)) +
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent_format()) +
@@ -176,9 +174,13 @@ ggplot(brexit_prop, aes(x = region, y = prop, fill = opinion)) +
     title = "Comparison of Brexit Opinions Across Regions",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
     x = "Region", y = "Proportion",
-    fill = "Opinion"  
+    fill = "Opinion"
   ) +
-  scale_fill_brewer(palette = "Set1") +
+  scale_fill_manual(values = c(
+    "Wrong" = "#ef8a62",
+    "Right" = "#67a9cf",
+    "Don't know" = "gray"
+  )) + 
   theme_minimal()
 
 ```
